@@ -9,20 +9,29 @@ package spk_saw;
  * @author ngato
  */
 import com.formdev.flatlaf.FlatDarkLaf;
-//import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.FlatLaf;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.SwingUtilities;
 import spk_saw.views.DashboardForm;
 
 public class MainApp {
+
     public static void main(String[] args) {
         try {
-            UIManager.setLookAndFeel(new FlatDarkLaf()); // aktifkan FlatLaf nighmode (new FlatLightLaf()
+            // Daftarkan folder tempat file theme .properties berada
+            FlatLaf.registerCustomDefaultsSource("themes");
+
+            // Gunakan FlatLightLaf dan aktifkan theme dari folder custom
+            UIManager.setLookAndFeel(new FlatDarkLaf()); // FlatLightLaf (untuk darkmode)
+
         } catch (UnsupportedLookAndFeelException e) {
-            e.printStackTrace();
+            System.err.println("Gagal menerapkan FlatLaf: " + e.getMessage());
         }
 
-        javax.swing.SwingUtilities.invokeLater(() -> {
+        // Tampilkan Dashboard utama
+        SwingUtilities.invokeLater(() -> {
             new DashboardForm().setVisible(true);
         });
     }
