@@ -14,6 +14,8 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.*;
 import java.sql.*;
+import spk_saw.controllers.KriteriaController;
+import spk_saw.models.Kriteria;
 
 public class KriteriaForm extends JFrame {
 
@@ -82,7 +84,7 @@ public class KriteriaForm extends JFrame {
         btnEdit.addActionListener(e -> editData());
         btnHapus.addActionListener(e -> hapusData());
         table.getSelectionModel().addListSelectionListener(e -> isiFormDariTable());
-        
+
         JButton btnBack = new JButton("Kembali");
         btnBack.setBounds(20, 350, 100, 30); // posisi di bawah tabel
         add(btnBack);
@@ -94,21 +96,11 @@ public class KriteriaForm extends JFrame {
     }
 
     private void loadData() {
-        try (Connection conn = KoneksiDB.getConnection()) {
-            tableModel.setRowCount(0);
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM kriteria");
-
-            while (rs.next()) {
-                tableModel.addRow(new Object[]{
-                        rs.getInt("id"),
-                        rs.getString("nama_kriteria"),
-                        rs.getDouble("bobot"),
-                        rs.getString("tipe")
-                });
-            }
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Gagal load data: " + e.getMessage());
+        tableModel.setRowCount(0);
+        for (Kriteria k : KriteriaController.getAll()) {
+            tableModel.addRow(new Object[]{
+                k.getId(), k.getNamaKriteria(), k.getBobot(), k.getTipe()
+            });
         }
     }
 
@@ -122,60 +114,50 @@ public class KriteriaForm extends JFrame {
             return;
         }
 
-        try (Connection conn = KoneksiDB.getConnection()) {
-            PreparedStatement ps = conn.prepareStatement("INSERT INTO kriteria(nama_kriteria, bobot, tipe) VALUES (?, ?, ?)");
-            ps.setString(1, nama);
-            ps.setDouble(2, Double.parseDouble(bobotText));
-            ps.setString(3, tipe);
-            ps.executeUpdate();
+        try {
+            double bobot = Double.parseDouble(bobotText);
+            KriteriaController.insert(nama, bobot, tipe);
             tfNama.setText("");
             tfBobot.setText("");
             cbTipe.setSelectedIndex(0);
             loadData();
-        } catch (SQLException | NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Gagal tambah: " + e.getMessage());
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Bobot harus angka!");
         }
     }
 
     private void editData() {
         int selected = table.getSelectedRow();
-        if (selected == -1) return;
+        if (selected == -1) {
+            return;
+        }
 
         int id = (int) tableModel.getValueAt(selected, 0);
         String nama = tfNama.getText().trim();
         String bobotText = tfBobot.getText().trim();
         String tipe = (String) cbTipe.getSelectedItem();
 
-        try (Connection conn = KoneksiDB.getConnection()) {
-            PreparedStatement ps = conn.prepareStatement("UPDATE kriteria SET nama_kriteria=?, bobot=?, tipe=? WHERE id=?");
-            ps.setString(1, nama);
-            ps.setDouble(2, Double.parseDouble(bobotText));
-            ps.setString(3, tipe);
-            ps.setInt(4, id);
-            ps.executeUpdate();
+        try {
+            double bobot = Double.parseDouble(bobotText);
+            KriteriaController.update(id, nama, bobot, tipe);
             loadData();
-        } catch (SQLException | NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Gagal edit: " + e.getMessage());
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Bobot harus angka!");
         }
     }
 
     private void hapusData() {
         int selected = table.getSelectedRow();
-        if (selected == -1) return;
+        if (selected == -1) {
+            return;
+        }
 
         int id = (int) tableModel.getValueAt(selected, 0);
-
-        try (Connection conn = KoneksiDB.getConnection()) {
-            PreparedStatement ps = conn.prepareStatement("DELETE FROM kriteria WHERE id=?");
-            ps.setInt(1, id);
-            ps.executeUpdate();
-            tfNama.setText("");
-            tfBobot.setText("");
-            cbTipe.setSelectedIndex(0);
-            loadData();
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Gagal hapus: " + e.getMessage());
-        }
+        KriteriaController.delete(id);
+        tfNama.setText("");
+        tfBobot.setText("");
+        cbTipe.setSelectedIndex(0);
+        loadData();
     }
 
     private void isiFormDariTable() {
