@@ -8,47 +8,73 @@ package spk_saw.views;
  *
  * @author ngato
  */
+import spk_saw.views.panel.SiswaPanel;
+import spk_saw.views.panel.KriteriaPanel;
+import spk_saw.views.panel.NilaiPanel;
+import spk_saw.views.panel.HasilPanel;
+
 import javax.swing.*;
+import java.awt.*;
 
 public class DashboardForm extends JFrame {
 
-    private JButton btnSiswa, btnKriteria, btnNilai, btnHasil;
+    private JPanel mainPanel;
 
     public DashboardForm() {
-        setTitle("Dashboard SPK - SAW");
-        setSize(400, 300);
+        setTitle("Sistem Pendukung Keputusan - SAW");
+        setSize(800, 500);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(null);
 
-        JLabel title = new JLabel("Sistem Pendukung Keputusan (SAW)");
-        title.setBounds(50, 20, 300, 30);
-        add(title);
+        // Header atau Judul
+        JLabel lblTitle = new JLabel("Dashboard SPK SAW", SwingConstants.CENTER);
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        lblTitle.setBounds(0, 10, 800, 30);
+        add(lblTitle);
 
-        btnSiswa = new JButton("Kelola Siswa");
-        btnSiswa.setBounds(100, 70, 200, 30);
+        // Tombol Navigasi
+        JButton btnSiswa = new JButton("Siswa");
+        JButton btnKriteria = new JButton("Kriteria");
+        JButton btnNilai = new JButton("Nilai");
+        JButton btnHasil = new JButton("Hasil SAW");
+
+        btnSiswa.setBounds(50, 50, 150, 30);
+        btnKriteria.setBounds(220, 50, 150, 30);
+        btnNilai.setBounds(390, 50, 150, 30);
+        btnHasil.setBounds(560, 50, 150, 30);
+
         add(btnSiswa);
-
-        btnKriteria = new JButton("Kelola Kriteria");
-        btnKriteria.setBounds(100, 110, 200, 30);
         add(btnKriteria);
-
-        btnNilai = new JButton("Input Nilai");
-        btnNilai.setBounds(100, 150, 200, 30);
         add(btnNilai);
-
-        btnHasil = new JButton("Lihat Hasil SAW");
-        btnHasil.setBounds(100, 190, 200, 30);
         add(btnHasil);
 
-        // Action
-        btnSiswa.addActionListener(e -> new SiswaForm().setVisible(true));
-        btnKriteria.addActionListener(e -> new KriteriaForm().setVisible(true));
-        btnNilai.addActionListener(e -> new NilaiForm().setVisible(true));
-        btnHasil.addActionListener(e -> new HasilSAWForm().setVisible(true));
+        // Panel Utama
+        mainPanel = new JPanel();
+        mainPanel.setBounds(30, 100, 720, 330);
+        mainPanel.setLayout(new BorderLayout());
+        add(mainPanel);
+
+        // Event untuk tombol
+        btnSiswa.addActionListener(e -> showPanel(new SiswaPanel()));
+        btnKriteria.addActionListener(e -> showPanel(new KriteriaPanel()));
+        btnNilai.addActionListener(e -> showPanel(new NilaiPanel()));
+        btnHasil.addActionListener(e -> showPanel(new HasilPanel()));
+
+        // Tampilkan panel awal
+        showPanel(new SiswaPanel());
+    }
+
+    private void showPanel(JPanel panel) {
+        mainPanel.removeAll();
+        mainPanel.add(panel, BorderLayout.CENTER);
+        mainPanel.revalidate();
+        mainPanel.repaint();
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new DashboardForm().setVisible(true));
+        SwingUtilities.invokeLater(() -> {
+            new DashboardForm().setVisible(true);
+        });
     }
 }
