@@ -14,8 +14,12 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.sql.*;
 import java.util.Vector;
+import spk_saw.controllers.KriteriaController;
+import spk_saw.controllers.NilaiController;
+import spk_saw.models.Kriteria;
 
 public class NilaiForm extends JFrame {
+
     private JComboBox<String> cbSiswa;
     private JTable tableNilai;
     private DefaultTableModel tableModel;
@@ -59,7 +63,7 @@ public class NilaiForm extends JFrame {
         add(btnSimpan);
 
         btnSimpan.addActionListener(e -> simpanNilai());
-        
+
         JButton btnBack = new JButton("Kembali");
         btnBack.setBounds(20, 350, 100, 30); // posisi di bawah tabel
         add(btnBack);
@@ -72,85 +76,37 @@ public class NilaiForm extends JFrame {
 
     private void loadSiswa() {
         cbSiswa.removeAllItems();
-        try (Connection conn = KoneksiDB.getConnection()) {
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT id, nama FROM siswa");
-            while (rs.next()) {
-                cbSiswa.addItem(rs.getInt("id") + " - " + rs.getString("nama"));
-            }
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Gagal load siswa: " + e.getMessage());
+        for (Siswa s : SiswaController.getAll()) {
+            cbSiswa.addItem(s.getId() + " - " + s.getNama());
         }
     }
 
     private void loadNilai() {
-        if (cbSiswa.getItemCount() == 0) return;
-
+        if (cbSiswa.getItemCount() == 0) {
+            return;
+        }
         int siswaId = Integer.parseInt(cbSiswa.getSelectedItem().toString().split(" - ")[0]);
         tableModel.setRowCount(0);
 
-        try (Connection conn = KoneksiDB.getConnection()) {
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM kriteria");
-
-            while (rs.next()) {
-                int idKriteria = rs.getInt("id");
-                String nama = rs.getString("nama_kriteria");
-
-                // cek apakah sudah ada nilai
-                PreparedStatement ps = conn.prepareStatement("SELECT nilai FROM nilai WHERE siswa_id=? AND kriteria_id=?");
-                ps.setInt(1, siswaId);
-                ps.setInt(2, idKriteria);
-                ResultSet rsNilai = ps.executeQuery();
-
-                double nilai = 0.0;
-                if (rsNilai.next()) {
-                    nilai = rsNilai.getDouble("nilai");
-                }
-
-                tableModel.addRow(new Object[]{idKriteria, nama, nilai});
-            }
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Gagal load nilai: " + e.getMessage());
+        for (Kriteria k : KriteriaController.getAll()) {
+            double nilai = NilaiController.getNilai(siswaId, k.getId());
+            tableModel.addRow(new Object[]{k.getId(), k.getNamaKriteria(), nilai});
         }
     }
 
     private void simpanNilai() {
-        if (cbSiswa.getItemCount() == 0) return;
-
+        if (cbSiswa.getItemCount() == 0) {
+            return;
+        }
         int siswaId = Integer.parseInt(cbSiswa.getSelectedItem().toString().split(" - ")[0]);
 
-        try (Connection conn = KoneksiDB.getConnection()) {
-            for (int i = 0; i < tableModel.getRowCount(); i++) {
-                int idKriteria = (int) tableModel.getValueAt(i, 0);
-                double nilai = Double.parseDouble(tableModel.getValueAt(i, 2).toString());
-
-                // cek apakah data sudah ada
-                PreparedStatement psCek = conn.prepareStatement("SELECT * FROM nilai WHERE siswa_id=? AND kriteria_id=?");
-                psCek.setInt(1, siswaId);
-                psCek.setInt(2, idKriteria);
-                ResultSet rsCek = psCek.executeQuery();
-
-                if (rsCek.next()) {
-                    // update
-                    PreparedStatement psUpdate = conn.prepareStatement("UPDATE nilai SET nilai=? WHERE siswa_id=? AND kriteria_id=?");
-                    psUpdate.setDouble(1, nilai);
-                    psUpdate.setInt(2, siswaId);
-                    psUpdate.setInt(3, idKriteria);
-                    psUpdate.executeUpdate();
-                } else {
-                    // insert
-                    PreparedStatement psInsert = conn.prepareStatement("INSERT INTO nilai(siswa_id, kriteria_id, nilai) VALUES (?, ?, ?)");
-                    psInsert.setInt(1, siswaId);
-                    psInsert.setInt(2, idKriteria);
-                    psInsert.setDouble(3, nilai);
-                    psInsert.executeUpdate();
-                }
-            }
-
-            JOptionPane.showMessageDialog(this, "Nilai berhasil disimpan!");
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Gagal simpan nilai: " + e.getMessage());
+        for (int i = 0; i < tableModel.getRowCount(); i++) {
+            int kriteriaId = (int) tableModel.getValueAt(i, 0);
+            double nilai = Double.parseDouble(tableModel.getValueAt(i, 2).toString());
+            NilaiController.insertAtauUpdate(siswaId, kriteriaId, nilai);
         }
+
+        JOptionPane.showMessageDialog(this, "Nilai berhasil disimpan!");
     }
+
 }
