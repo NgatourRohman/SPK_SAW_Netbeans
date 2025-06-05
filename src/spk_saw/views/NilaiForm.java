@@ -16,7 +16,9 @@ import java.sql.*;
 import java.util.Vector;
 import spk_saw.controllers.KriteriaController;
 import spk_saw.controllers.NilaiController;
+import spk_saw.controllers.SiswaController;
 import spk_saw.models.Kriteria;
+import spk_saw.models.Siswa;
 
 public class NilaiForm extends JFrame {
 

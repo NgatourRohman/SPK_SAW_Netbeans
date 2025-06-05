@@ -8,24 +8,25 @@ package spk_saw.views;
  *
  * @author ngato
  */
-import spk_saw.config.KoneksiDB;
-import java.sql.*;
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 import spk_saw.controllers.SiswaController;
 import spk_saw.models.Siswa;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+
+import java.util.List;
 
 public class SiswaForm extends JFrame {
 
     private DefaultTableModel tableModel;
     private JTextField tfNama;
     private JTable table;
-    private JButton btnTambah, btnHapus, btnEdit;
+    private JButton btnTambah, btnHapus, btnEdit, btnBack;
 
     public SiswaForm() {
         setTitle("Manajemen Data Siswa");
-        setSize(620, 450);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(600, 450);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         initComponents();
         loadData();
@@ -33,7 +34,7 @@ public class SiswaForm extends JFrame {
 
     private void initComponents() {
         setLayout(null);
-        
+
         JLabel lblNama = new JLabel("Nama Siswa:");
         lblNama.setBounds(20, 20, 100, 25);
         add(lblNama);
@@ -57,90 +58,76 @@ public class SiswaForm extends JFrame {
         tableModel = new DefaultTableModel(new String[]{"ID", "Nama"}, 0);
         table = new JTable(tableModel);
         JScrollPane scrollPane = new JScrollPane(table);
-        scrollPane.setBounds(20, 60, 560, 280);
+        scrollPane.setBounds(20, 60, 560, 250);
         add(scrollPane);
+
+        btnBack = new JButton("Kembali");
+        btnBack.setBounds(20, 320, 100, 30);
+        add(btnBack);
 
         // EVENT BUTTON
         btnTambah.addActionListener(e -> tambahData());
         btnEdit.addActionListener(e -> editData());
         btnHapus.addActionListener(e -> hapusData());
-        table.getSelectionModel().addListSelectionListener(e -> isiFormDariTable());
-        
-                JButton btnBack = new JButton("Kembali");
-        btnBack.setBounds(20, 350, 100, 30); // posisi di bawah tabel
-        add(btnBack);
-
         btnBack.addActionListener(e -> {
             dispose();
             new DashboardForm().setVisible(true);
         });
+        table.getSelectionModel().addListSelectionListener(e -> isiFormDariTable());
     }
 
     private void loadData() {
         tableModel.setRowCount(0);
-        for (Siswa s : SiswaController.getAll()) {
+        List<Siswa> siswaList = SiswaController.getAll();
+        for (Siswa s : siswaList) {
             tableModel.addRow(new Object[]{s.getId(), s.getNama()});
         }
     }
-    
+
     private void tambahData() {
         String nama = tfNama.getText().trim();
         if (nama.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Nama tidak boleh kosong!");
             return;
         }
-
-        try (Connection conn = KoneksiDB.getConnection()) {
-            PreparedStatement ps = conn.prepareStatement("INSERT INTO siswa(nama) VALUES (?)");
-            ps.setString(1, nama);
-            ps.executeUpdate();
-            tfNama.setText("");
-            loadData();
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Error tambah: " + e.getMessage());
-        }
+        SiswaController.insert(nama);
+        tfNama.setText("");
+        loadData();
     }
 
     private void editData() {
         int selectedRow = table.getSelectedRow();
-        if (selectedRow == -1) return;
+        if (selectedRow == -1) {
+            return;
+        }
 
         int id = (int) tableModel.getValueAt(selectedRow, 0);
         String nama = tfNama.getText().trim();
 
-        try (Connection conn = KoneksiDB.getConnection()) {
-            PreparedStatement ps = conn.prepareStatement("UPDATE siswa SET nama=? WHERE id=?");
-            ps.setString(1, nama);
-            ps.setInt(2, id);
-            ps.executeUpdate();
-            loadData();
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Error edit: " + e.getMessage());
-        }
+        SiswaController.update(id, nama);
+        loadData();
     }
 
     private void hapusData() {
         int selectedRow = table.getSelectedRow();
-        if (selectedRow == -1) return;
+        if (selectedRow == -1) {
+            return;
+        }
 
         int id = (int) tableModel.getValueAt(selectedRow, 0);
-
-        try (Connection conn = KoneksiDB.getConnection()) {
-            PreparedStatement ps = conn.prepareStatement("DELETE FROM siswa WHERE id=?");
-            ps.setInt(1, id);
-            ps.executeUpdate();
-            tfNama.setText("");
-            loadData();
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Error hapus: " + e.getMessage());
-        }
+        SiswaController.delete(id);
+        tfNama.setText("");
+        loadData();
     }
 
     private void isiFormDariTable() {
         int selectedRow = table.getSelectedRow();
         if (selectedRow != -1) {
-            String nama = (String) tableModel.getValueAt(selectedRow, 1);
-            tfNama.setText(nama);
+            tfNama.setText((String) tableModel.getValueAt(selectedRow, 1));
         }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new SiswaForm().setVisible(true));
     }
 }
