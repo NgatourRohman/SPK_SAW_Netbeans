@@ -22,7 +22,7 @@ public class HasilSAWForm extends JFrame {
 
     public HasilSAWForm() {
         setTitle("Hasil Perhitungan SAW");
-        setSize(700, 400);
+        setSize(700, 450);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         initComponents();
@@ -42,6 +42,15 @@ public class HasilSAWForm extends JFrame {
         add(scrollPane);
 
         btnProses.addActionListener(e -> prosesSAW());
+        
+        JButton btnBack = new JButton("Kembali");
+        btnBack.setBounds(20, 350, 100, 30); // posisi di bawah tabel
+        add(btnBack);
+
+        btnBack.addActionListener(e -> {
+            dispose();
+            new DashboardForm().setVisible(true);
+        });
     }
 
     private void prosesSAW() {

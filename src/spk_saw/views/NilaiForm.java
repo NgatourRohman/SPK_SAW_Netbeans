@@ -23,7 +23,7 @@ public class NilaiForm extends JFrame {
 
     public NilaiForm() {
         setTitle("Input Nilai Siswa");
-        setSize(700, 400);
+        setSize(700, 450);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         initComponents();
@@ -59,6 +59,15 @@ public class NilaiForm extends JFrame {
         add(btnSimpan);
 
         btnSimpan.addActionListener(e -> simpanNilai());
+        
+        JButton btnBack = new JButton("Kembali");
+        btnBack.setBounds(20, 350, 100, 30); // posisi di bawah tabel
+        add(btnBack);
+
+        btnBack.addActionListener(e -> {
+            dispose();
+            new DashboardForm().setVisible(true);
+        });
     }
 
     private void loadSiswa() {

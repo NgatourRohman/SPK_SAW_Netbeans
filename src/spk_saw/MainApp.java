@@ -9,12 +9,12 @@ package spk_saw;
  * @author ngato
  */
 import javax.swing.SwingUtilities;
-import spk_saw.views.SiswaForm;
+import spk_saw.views.DashboardForm;
 
 public class MainApp {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            new SiswaForm().setVisible(true);
+            new DashboardForm().setVisible(true);
         });
     }
 }

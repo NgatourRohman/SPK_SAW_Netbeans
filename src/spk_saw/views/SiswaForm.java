@@ -22,7 +22,7 @@ public class SiswaForm extends JFrame {
 
     public SiswaForm() {
         setTitle("Manajemen Data Siswa");
-        setSize(600, 400);
+        setSize(620, 450);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         initComponents();
@@ -31,7 +31,7 @@ public class SiswaForm extends JFrame {
 
     private void initComponents() {
         setLayout(null);
-
+        
         JLabel lblNama = new JLabel("Nama Siswa:");
         lblNama.setBounds(20, 20, 100, 25);
         add(lblNama);
@@ -63,6 +63,15 @@ public class SiswaForm extends JFrame {
         btnEdit.addActionListener(e -> editData());
         btnHapus.addActionListener(e -> hapusData());
         table.getSelectionModel().addListSelectionListener(e -> isiFormDariTable());
+        
+                JButton btnBack = new JButton("Kembali");
+        btnBack.setBounds(20, 350, 100, 30); // posisi di bawah tabel
+        add(btnBack);
+
+        btnBack.addActionListener(e -> {
+            dispose();
+            new DashboardForm().setVisible(true);
+        });
     }
 
     private void loadData() {

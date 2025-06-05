@@ -25,7 +25,7 @@ public class KriteriaForm extends JFrame {
 
     public KriteriaForm() {
         setTitle("Manajemen Data Kriteria");
-        setSize(600, 400);
+        setSize(600, 450);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         initComponents();
@@ -82,6 +82,15 @@ public class KriteriaForm extends JFrame {
         btnEdit.addActionListener(e -> editData());
         btnHapus.addActionListener(e -> hapusData());
         table.getSelectionModel().addListSelectionListener(e -> isiFormDariTable());
+        
+        JButton btnBack = new JButton("Kembali");
+        btnBack.setBounds(20, 350, 100, 30); // posisi di bawah tabel
+        add(btnBack);
+
+        btnBack.addActionListener(e -> {
+            dispose();
+            new DashboardForm().setVisible(true);
+        });
     }
 
     private void loadData() {
