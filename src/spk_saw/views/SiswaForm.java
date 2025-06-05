@@ -12,6 +12,8 @@ import spk_saw.config.KoneksiDB;
 import java.sql.*;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import spk_saw.controllers.SiswaController;
+import spk_saw.models.Siswa;
 
 public class SiswaForm extends JFrame {
 
@@ -75,22 +77,12 @@ public class SiswaForm extends JFrame {
     }
 
     private void loadData() {
-        try (Connection conn = KoneksiDB.getConnection()) {
-            tableModel.setRowCount(0); // Bersihkan tabel
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM siswa");
-
-            while (rs.next()) {
-                tableModel.addRow(new Object[]{
-                        rs.getInt("id"),
-                        rs.getString("nama")
-                });
-            }
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Error load data: " + e.getMessage());
+        tableModel.setRowCount(0);
+        for (Siswa s : SiswaController.getAll()) {
+            tableModel.addRow(new Object[]{s.getId(), s.getNama()});
         }
     }
-
+    
     private void tambahData() {
         String nama = tfNama.getText().trim();
         if (nama.isEmpty()) {
